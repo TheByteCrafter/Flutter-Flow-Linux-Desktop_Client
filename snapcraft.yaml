@@ -1,0 +1,55 @@
+# Snapcraft YAML file for the Flutter Floe Desktop Client (Unofficial)
+
+name: flutter-floe-desktop-client-unofficial
+title: Flutter Floe Desktop Client (Unofficial)
+version: '1.0'
+summary: A desktop client for a FlutterFlow-based web application.
+description: |
+  This is an unofficial desktop client designed to wrap a FlutterFlow-based
+  web application for use on the Ubuntu desktop.
+grade: stable
+confinement: strict
+base: core22 # A modern base for a secure and stable app
+
+apps:
+  # This defines the main application that will be launched by the user.
+  flutter-floe-desktop-client-unofficial:
+    # The command to execute when the app is launched.
+    # It points to the bundled Electron app's executable.
+    command: flutter-floe-desktop-client-unofficial/flutter-floe-desktop-client-unofficial
+    # This extension handles the GNOME desktop environment dependencies
+    # and provides a seamless user experience.
+    extensions:
+      - gnome
+    # Plugs define the interfaces your app needs to interact with the system.
+    # network: Allows your app to connect to the internet (essential for web apps).
+    # network-bind: Allows your app to listen on ports if needed.
+    # desktop: Provides access to desktop environment features.
+    # home: Allows access to user's home directory.
+    plugs:
+      - network
+      - network-bind
+      - desktop
+      - home
+
+parts:
+  # The 'electron-app' part handles the packaging of your Electron source code.
+  electron-app:
+    # The 'nil' plugin is used when you are packaging a pre-existing app
+    # rather than building from source.
+    plugin: nil
+    source: .
+    # The override-build script runs custom commands to build your Electron app
+    # using 'electron-packager' and copies the output to the correct location.
+    override-build: |
+      npm install
+      npx electron-packager . --overwrite --platform=linux --output=release-build --prune=true
+      # The cp command copies the built app into the snap's install directory.
+      cp -rv ./release-build/flutter-floe-desktop-client-unofficial-linux-x64/* $SNAPCRAFT_PART_INSTALL/flutter-floe-desktop-client-unofficial
+    # These dependencies are required for building and running the Electron app.
+    build-packages:
+      - nodejs
+      - npm
+    stage-packages:
+      - libnss3
+      - libnspr4
